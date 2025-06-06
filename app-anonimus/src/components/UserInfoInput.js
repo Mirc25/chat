@@ -1,93 +1,121 @@
 import React, { useState } from 'react';
 
-const PROVINCE_ROOMS = [
-  "Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes",
-  "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza",
-  "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis",
-  "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán"
-].map(p => ({
-  name: p,
-  id: p.replace(/\s/g, '_').toLowerCase()
-}));
+function UserInfoInput({ onInfoSet, error, provinceRooms }) {
+    const [nickname, setNickname] = useState('');
+    const [sex, setSex] = useState('');
+    const [province, setProvince] = useState('');
+    const [localError, setLocalError] = useState('');
 
-function UserInfoInput({ onInfoSet, error }) {
-  const [inputNickname, setInputNickname] = useState('');
-  const [selectedSex, setSelectedSex] = useState('');
-  const [selectedProvinceId, setSelectedProvinceId] = useState('');
-  const [localError, setLocalError] = useState('');
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setLocalError(''); // Limpiar errores locales anteriores
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setLocalError('');
+        if (!nickname.trim()) {
+            setLocalError('El nickname no puede estar vacío.');
+            return;
+        }
+        if (nickname.length > 15) { // Límite de 15 caracteres para nickname
+            setLocalError('El nickname no puede tener más de 15 caracteres.');
+            return;
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(nickname)) { // Permitir letras, números y guiones bajos
+            setLocalError('El nickname solo puede contener letras, números y guiones bajos.');
+            return;
+        }
+        if (!sex) {
+            setLocalError('Por favor, selecciona tu sexo.');
+            return;
+        }
+        if (!province) {
+            setLocalError('Por favor, selecciona tu provincia.');
+            return;
+        }
 
-    if (!inputNickname.trim()) {
-      setLocalError('El nickname no puede estar vacío.');
-      return;
-    }
-    if (!selectedSex) {
-      setLocalError('Por favor, selecciona tu sexo.');
-      return;
-    }
-    if (!selectedProvinceId) {
-      setLocalError('Por favor, selecciona tu provincia.');
-      return;
-    }
+        // Si todo es válido, llama a la función onInfoSet del componente padre
+        onInfoSet(nickname.trim(), sex, province);
+    };
 
-    onInfoSet(inputNickname.trim(), selectedSex, selectedProvinceId);
-  };
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+            <h2 className="text-3xl font-bold mb-6 text-blue-400">Ingresa tus Datos</h2>
+            <form onSubmit={handleSubmit} className="w-full max-w-sm bg-gray-800 p-8 rounded-lg shadow-xl">
+                <div className="mb-4">
+                    <label htmlFor="nickname" className="block text-gray-300 text-lg font-medium mb-2">
+                        Nickname:
+                    </label>
+                    <input
+                        type="text"
+                        id="nickname"
+                        className="w-full p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                        placeholder="Ej: ChatMaster23"
+                        maxLength="15" // Asegurar que el input respeta el límite
+                    />
+                </div>
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm text-center">
-        <h2 className="text-3xl font-bold text-blue-400 mb-6">Completa tu Información</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input
-            type="text"
-            value={inputNickname}
-            onChange={(e) => setInputNickname(e.target.value)}
-            placeholder="Ingresa tu nickname..."
-            className="p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-lg"
-            maxLength="15"
-          />
+                <div className="mb-4">
+                    <label className="block text-gray-300 text-lg font-medium mb-2">
+                        Sexo:
+                    </label>
+                    <div className="flex items-center space-x-4">
+                        <label className="inline-flex items-center">
+                            <input
+                                type="radio"
+                                name="sex"
+                                value="male"
+                                checked={sex === 'male'}
+                                onChange={() => setSex('male')}
+                                className="form-radio h-5 w-5 text-blue-600"
+                            />
+                            <span className="ml-2 text-gray-300">Masculino</span>
+                        </label>
+                        <label className="inline-flex items-center">
+                            <input
+                                type="radio"
+                                name="sex"
+                                value="female"
+                                checked={sex === 'female'}
+                                onChange={() => setSex('female')}
+                                className="form-radio h-5 w-5 text-pink-600"
+                            />
+                            <span className="ml-2 text-gray-300">Femenino</span>
+                        </label>
+                    </div>
+                </div>
 
-          <select
-            value={selectedSex}
-            onChange={(e) => setSelectedSex(e.target.value)}
-            className="p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-lg appearance-none"
-          >
-            <option value="" disabled hidden>Selecciona tu sexo...</option>
-            <option value="masculino">Masculino</option>
-            <option value="femenino">Femenino</option>
-            <option value="otro">Otro</option>
-          </select>
+                <div className="mb-6">
+                    <label htmlFor="province" className="block text-gray-300 text-lg font-medium mb-2">
+                        Provincia:
+                    </label>
+                    <select
+                        id="province"
+                        className="w-full p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+                        value={province}
+                        onChange={(e) => setProvince(e.target.value)}
+                    >
+                        <option value="">Selecciona tu provincia</option>
+                        {provinceRooms.map((room) => (
+                            <option key={room.id} value={room.id}>
+                                {room.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-          <select
-            value={selectedProvinceId}
-            onChange={(e) => setSelectedProvinceId(e.target.value)}
-            className="p-3 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500 text-lg appearance-none"
-          >
-            <option value="" disabled hidden>Selecciona tu provincia...</option>
-            {PROVINCE_ROOMS.map((province) => (
-              <option key={province.id} value={province.id}>
-                {province.name}
-              </option>
-            ))}
-          </select>
+                {(localError || error) && (
+                    <p className="text-red-500 text-center mb-4 text-sm">{localError || error}</p>
+                )}
 
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 text-lg"
-          >
-            Entrar al Chat
-          </button>
-        </form>
-        {(localError || error) && (
-          <p className="mt-4 text-red-400 text-sm">{localError || error}</p>
-        )}
-        <p className="text-gray-400 text-sm mt-4">Tu nickname se mostrará a otros usuarios.</p>
-      </div>
-    </div>
-  );
+                <button
+                    type="submit"
+                    className="w-full bg-blue-600 text-white p-3 rounded-md font-semibold hover:bg-blue-700 transition-colors duration-200"
+                >
+                    Entrar al Chat
+                </button>
+            </form>
+        </div>
+    );
 }
 
 export default UserInfoInput;

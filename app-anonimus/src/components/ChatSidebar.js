@@ -1,80 +1,82 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleDot } from '@fortawesome/free-solid-svg-icons';
+import { faUserCircle, faTimes } from '@fortawesome/free-solid-svg-icons'; // Eliminados faComments y faUsers
 
-function ChatSidebar({
-  usersOnline,
-  onSelectChat, // Función recibida para cambiar el chat
-  currentChat,
-  nickname,
-  unreadPrivateChats,
-  unreadProvinceChats,
-  generalChatNameDisplay,
-  selectedProvinceRoomId
-}) {
-  console.log('🔄 [DEPURACIÓN SIDEBAR] ChatSidebar se está renderizando. CurrentChat:', currentChat, 'UsersOnline:', usersOnline.length);
-  const filteredUsers = usersOnline.filter(user => user !== nickname);
+function ChatSidebar({ onSelectChat, currentChat, nickname, usersOnline, unreadPrivateChats, isMobile, isSidebarOpen, toggleSidebar }) {
+    const getNicknameColorClass = (gender) => {
+        if (gender === 'mujer') {
+            return 'text-pink-400';
+        } else if (gender === 'hombre') {
+            return 'text-blue-400';
+        }
+        return 'text-gray-400';
+    };
 
-  return (
-    <div className="w-1/4 bg-gray-800 p-4 border-r border-gray-700 overflow-y-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-blue-400">mirc25</h1>
-        <p className="text-sm text-gray-400">Salas de Chat de Argentina</p>
-      </div>
-
-      <h2 className="text-xl font-semibold mb-4 text-blue-400">Usuarios Conectados</h2>
-      <ul>
-        {filteredUsers.length > 0 ? (
-          filteredUsers.map((user, index) => (
-            <li key={index} className="mb-2">
-              <button
-                className={`w-full text-left p-2 rounded-md transition duration-200 ${
-                  currentChat === `private_${user}`
-                    ? 'bg-blue-600 text-white'
-                    : 'hover:bg-gray-700 text-gray-300'
-                } flex justify-between items-center`}
-                onClick={() => {
-                    console.log(`✨ [DEPURACIÓN SIDEBAR] Botón de nickname clicado: ${user}`);
-                    onSelectChat(`private_${user}`); // Llama a la función pasada por prop
-                }}
-              >
-                {user}
-                {unreadPrivateChats[user] && (
-                  <FontAwesomeIcon icon={faCircleDot} className="text-red-500 text-sm" />
+    return (
+        <div className={`
+            w-64 bg-gray-900 text-white flex flex-col p-4 border-r border-gray-700
+            ${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out' : ''}
+            ${isMobile && !isSidebarOpen ? '-translate-x-full' : ''}
+            ${isMobile && isSidebarOpen ? 'translate-x-0' : ''}
+            md:static md:translate-x-0 md:flex
+        `}>
+            {/* Cabecera de la Sidebar (con botón de cerrar en móvil) */}
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
+                <div className="text-2xl font-bold text-blue-500">Mirc25</div>
+                {isMobile && (
+                    <button
+                        onClick={toggleSidebar}
+                        className="text-gray-400 hover:text-white p-2"
+                        aria-label="Cerrar menú"
+                    >
+                        <FontAwesomeIcon icon={faTimes} size="lg" />
+                    </button>
                 )}
-              </button>
-            </li>
-          ))
-        ) : (
-          <li className="text-gray-400">No hay otros usuarios online.</li>
-        )}
-      </ul>
+            </div>
 
-      <div className="mt-6 border-t border-gray-700 pt-4">
-        <h2 className="text-xl font-semibold mb-4 text-green-400">Salas de Chat</h2>
-        <ul>
-          <li className="mb-2">
-            <button
-              className={`w-full text-left p-2 rounded-md transition duration-200 ${
-                currentChat === selectedProvinceRoomId
-                  ? 'bg-blue-600 text-white'
-                  : 'hover:bg-gray-700 text-gray-300'
-              } flex justify-between items-center`}
-              onClick={() => {
-                console.log(`✨ [DEPURACIÓN SIDEBAR] Botón de chat general clicado: ${selectedProvinceRoomId}`);
-                onSelectChat(selectedProvinceRoomId);
-              }}
-            >
-              {generalChatNameDisplay}
-              {(unreadProvinceChats && unreadProvinceChats[selectedProvinceRoomId]) && currentChat !== selectedProvinceRoomId && (
-                  <FontAwesomeIcon icon={faCircleDot} className="text-red-500 text-sm" />
-              )}
-            </button>
-          </li>
-        </ul>
-      </div>
-    </div>
-  );
+            {/* Información del usuario actual */}
+            <div className="mb-6 pb-4 border-b border-gray-700 text-center">
+                <FontAwesomeIcon icon={faUserCircle} size="3x" className="text-gray-400 mb-2" />
+                <p className="text-lg font-semibold">{nickname}</p>
+            </div>
+
+            {/* Navegación de Chats Privados - Ahora es el foco principal de la sidebar */}
+            <nav className="flex-1 overflow-y-auto">
+                <ul className="space-y-2">
+                    <li className="text-sm font-semibold text-gray-400 uppercase mb-2">
+                        Chats Privados
+                    </li>
+
+                    {usersOnline.length === 1 && ( // Si solo está el propio usuario
+                        <li className="text-gray-500 text-sm italic py-2 px-3">No hay otros usuarios conectados.</li>
+                    )}
+
+                    {usersOnline.map((user) => (
+                        user.username !== nickname && (
+                            <li key={user.id}>
+                                <button
+                                    onClick={() => onSelectChat(`private_${user.id}`)}
+                                    className={`w-full text-left p-3 rounded-md flex items-center relative transition-colors duration-200 ${
+                                        currentChat === `private_${user.id}`
+                                            ? 'bg-blue-700 text-white'
+                                            : 'hover:bg-gray-700 text-gray-300'
+                                    }`}
+                                >
+                                    <FontAwesomeIcon icon={faUserCircle} className="mr-3 text-gray-400" />
+                                    <span className={getNicknameColorClass(user.gender)}>
+                                        {user.username}
+                                    </span>
+                                    {unreadPrivateChats[user.id] && (
+                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
+                                    )}
+                                </button>
+                            </li>
+                        )
+                    ))}
+                </ul>
+            </nav>
+        </div>
+    );
 }
 
 export default ChatSidebar;

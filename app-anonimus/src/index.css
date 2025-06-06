@@ -1,3 +1,49 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Establecer un fondo oscuro por defecto para toda la aplicación */
+  background-color: #0F172A; /* Slate 900 */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Animación para el indicador de mensajes no leídos */
+@keyframes notification-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-notification-pulse {
+  animation: notification-pulse 1.5s infinite;
+}
+
+/* Ocultar la barra de scroll en navegadores Webkit (Chrome, Safari) */
+.overflow-y-auto::-webkit-scrollbar {
+  display: none; /* Oculta la barra de scroll */
+}
+
+/* Ocultar la barra de scroll para Firefox */
+.overflow-y-auto {
+  scrollbar-width: none; /* Oculta la barra de scroll */
+}
